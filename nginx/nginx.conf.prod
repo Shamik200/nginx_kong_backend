@@ -1,0 +1,48 @@
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream user-service {
+        server user-service:3001;
+    }
+
+    upstream post-service {
+        server post-service:3002;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+
+        # Health check endpoint
+        location /health {
+            return 200 "OK";
+            add_header Content-Type text/plain;
+        }
+
+        # User service routes
+        location /users {
+            proxy_pass http://user-service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Post service routes
+        location /posts {
+            proxy_pass http://post-service;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Root endpoint
+        location / {
+            return 200 "Microservices Application is Running";
+            add_header Content-Type text/plain;
+        }
+    }
+}
