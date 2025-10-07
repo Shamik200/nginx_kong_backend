@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.8"
 
 networks:
   app-network:
@@ -13,11 +13,6 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   post-service:
     build: ./post-service
@@ -27,17 +22,12 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3002/posts"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   nginx:
     image: nginx:alpine
     container_name: nginx-proxy
     ports:
-      - "80:80"
+      - "8080:80"  # Changed from 80 to 8080
     volumes:
       - ./nginx/nginx.conf.prod:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -46,8 +36,3 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
